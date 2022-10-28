@@ -2,10 +2,7 @@ import boto3
 
 
 default_table_name = 'bsm_data'
-default_things = [
-    'BSM_G101',
-    'BSM_G102'
-]
+default_thing_type = 'BSM_01'
 
 dynamodb = boto3.resource('dynamodb')
 iot_client = boto3.client('iot')
@@ -16,39 +13,39 @@ def delete_tables():
 
 def delete_things():
 
-    for thing in default_things:
+    resp = iot_client.list_things(thingTypeName=default_thing_type)
+    thing_names = [thing.get('thingName') for thing in resp.get('things')]
+    
+    for thing in thing_names:
         try:
-            r_principals = iot_client.list_thing_principals(thingName=thing)
+            principals = iot_client.list_thing_principals(thingName=thing)
         except Exception as e:
-            print("ERROR listing thing principals: {}".format(e))
-            r_principals = {'principals': []}
+            print(f"ERROR listing thing principals: {e}")
+            principals = {'principals': []}
 
-        #print("r_principals: {}".format(r_principals))
-        for arn in r_principals['principals']:
+        for arn in principals['principals']:
             cert_id = arn.split('/')[1]
-            print("  arn: {} cert_id: {}".format(arn, cert_id))
+            print(f"  arn: {arn} cert_id: {cert_id}")
 
-            r_detach_thing = iot_client.detach_thing_principal(thingName=thing, principal=arn)
-            print("  DETACH THING: {}".format(r_detach_thing))
+            detach_thing = iot_client.detach_thing_principal(thingName=thing, principal=arn)
+            print(f"  DETACH THING: {detach_thing}")
 
-            r_upd_cert = iot_client.update_certificate(certificateId=cert_id,newStatus='INACTIVE')
-            print("  INACTIVE: {}".format(r_upd_cert))
+            upd_cert = iot_client.update_certificate(certificateId=cert_id,newStatus='INACTIVE')
+            print(f"  INACTIVE: {upd_cert}")
 
-            r_policies = iot_client.list_principal_policies(principal=arn)
-            #print("    r_policies: {}".format(r_policies))
+            policies = iot_client.list_principal_policies(principal=arn)
 
-            for pol in r_policies['policies']:
+            for pol in policies['policies']:
                 pol_name = pol['policyName']
-                print("    pol_name: {}".format(pol_name))
-                #policy_names[pol_name] = 1
-                r_detach_pol = iot_client.detach_policy(policyName=pol_name,target=arn)
-                print("    DETACH POL: {}".format(r_detach_pol))
+                print(f"    pol_name: {pol_name}")
+                detach_pol = iot_client.detach_policy(policyName=pol_name,target=arn)
+                print(f"    DETACH POL: {detach_pol}")
 
-            r_del_cert = iot_client.delete_certificate(certificateId=cert_id,forceDelete=True)
-            print("  DEL CERT: {}".format(r_del_cert))
+            del_cert = iot_client.delete_certificate(certificateId=cert_id,forceDelete=True)
+            print(f"  DEL CERT: {del_cert}")
             del_thing = iot_client.delete_thing(thingName=thing)
-            dep = iot_client.deprecate_thing_type(thingTypeName='BSM_01')
-            del_thing_type = iot_client.delete_thing_type(thingTypeName='BSM_01')
+        dep = iot_client.deprecate_thing_type(thingTypeName=default_thing_type)
+        del_thing_type = iot_client.delete_thing_type(thingTypeName=default_thing_type)
 
 
 if __name__ == '__main__':

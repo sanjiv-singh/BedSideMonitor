@@ -22,24 +22,24 @@ def create_certificate(client, thing_name):
         cert_file.write(data['certificatePem'])
 
     resp = client.attach_policy(
-		policyName=default_policy_name,
-		target=cert_arn
+		    policyName=default_policy_name,
+		    target=cert_arn
     )
     resp = client.attach_thing_principal(
-		thingName=thing_name,
-		principal=cert_arn
+		    thingName=thing_name,
+		    principal=cert_arn
     )
 
 def create_thing(client, thing_name, thing_type_name, thing_group_name):
     props = {'thingTypeDescription': 'Bed Side Monitor for Critical Care Units in hospitals'}
     type_resp = client.create_thing_type(
-		thingTypeName=thing_type_name,
-		thingTypeProperties=props
+		    thingTypeName=thing_type_name,
+		    thingTypeProperties=props
     )
     props = {'thingGroupDescription': 'Group of all devices deployed in hospital'}
     group_resp = client.create_thing_group(
-		thingGroupName=thing_group_name,
-		thingGroupProperties=props
+		    thingGroupName=thing_group_name,
+		    thingGroupProperties=props
     )
     resp = client.create_thing(thingName=thing_name, thingTypeName=thing_type_name)
     resp = client.add_thing_to_thing_group(thingName=thing_name, thingGroupName=thing_group_name)

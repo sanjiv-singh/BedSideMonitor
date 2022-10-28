@@ -1,6 +1,7 @@
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key, Attr, And
 from botocore.exceptions import ClientError
+from functools import reduce
 
 
 class Database:
@@ -22,13 +23,24 @@ class Database:
 		return response.get('Item')
 	
 	# To get data based on partition key value
-	def query(self, partition_value, filter_key=None, filter_value=None):
+	def query1(self, partition_value, filter_key=None, filter_value=None):
 		query_params = {}
 		query_params['KeyConditionExpression'] = Key('deviceid').eq(partition_value)
 		if filter_key:
 			query_params['FilterExpression'] = Attr(filter_key).eq(filter_value)
 		response = self._table.query(**query_params)
 		return response.get('Items')
+	
+	# To get data based on partition key value
+	def query(self, partition_value, **kwargs):
+		query_params = {}
+		query_params['KeyConditionExpression'] = Key('deviceid').eq(partition_value)
+		if kwargs:
+			query_params['FilterExpression'] = reduce(And, ([Key(k).eq(v) for k, v in kwargs.items()]))
+		response = self._table.query(**query_params)
+		return response.get('Items')
+	
+	#FilterExpression=reduce(And, ([Key(k).eq(v) for k, v in filters.items()]))
 
 	# To get data based on partition attribute value and comparison with sort attribute range
 	def query_cmp(self, partition_value, cmp_op='lt', cmp_value='0'):
@@ -40,12 +52,12 @@ class Database:
 		return response.get('Items')
 
 	# To get a continuous range of data based on partition attribute value and sort attribute range
-	def query_range(self, partition_value, sort_range, filter_key=None, filter_value=None):
+	def query_range(self, partition_value, sort_range, **kwargs):
 		query_params = {}
 		query_params['KeyConditionExpression'] = Key('deviceid').eq(partition_value) & \
 	    		Key('timestamp').between(sort_range[0], sort_range[1])
-		if filter_key:
-			query_params['FilterExpression'] = Attr(filter_key).eq(filter_value)
+		if kwargs:
+			query_params['FilterExpression'] = reduce(And, ([Key(k).eq(v) for k, v in kwargs.items()]))
 		response = self._table.query(**query_params)
 		return response.get('Items')
 

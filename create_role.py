@@ -1,6 +1,6 @@
 import boto3
 import json
-import sys
+import time
 
 default_role_name = 'BSM_role'
 default_rule_name = 'BSM_DynamoDB'
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     iam_role_name = input(f'Enter role name ({default_role_name}) : ') or default_role_name
     delete_role(iam_client, iam_role_name)
     role_arn = create_role(iam_client, iam_role_name)
-    print(role_arn)
+    time.sleep(2)
     iot_client = boto3.client('iot')
     delete_rule(iot_client, default_rule_name)
     create_rule(iot_client, role_arn)

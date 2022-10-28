@@ -1,3 +1,5 @@
+from decimal import Decimal
+import json
 import boto3
 from boto3.dynamodb.conditions import Key, Attr, And
 from botocore.exceptions import ClientError
@@ -63,6 +65,10 @@ class Database:
 
 	# Inserts (or overwrites) a single item based on already formed item dict
 	def put_item(self, item):
-		pass
+		item_str = json.dumps(item)
+		item_parsed = json.loads(item_str, parse_float=Decimal)
+		response = self._table.put_item(
+			Item=item_parsed
+		)
 
 

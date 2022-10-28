@@ -1,53 +1,44 @@
-from datetime import datetime
-from typing import List
-from Database import DynamoDB
+from os import times
+from Database import Database
+from datetime import datetime, timedelta
+import math
 
-class BSMRawData:
+DATA_TYPES = ['HeartRate', 'SPO2', 'Temperature']
 
-    _devicetype: str
-    _value: float
-    _timestamp: datetime
+class RawDataModel:
+    def __init__(self):
+        self._db = Database('bsm_data', 'deviceid', 'timestamp')
+        self._data_types = DATA_TYPES
 
-    def __init__(self, devicetype: str, value: float, timestamp: str):
-        self._devicetype = devicetype
-        self._value = value
-        self._timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
-    
-    @property
-    def devicetype(self):
-        return self._devicetype
-    
-    @devicetype.setter
-    def devicetype(self, devicetype):
-        self._devicetype = devicetype
-    
-    @property
-    def value(self):
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        self._value = value
-    
-    @property
-    def timestamp(self):
-        return self._timestamp
-    
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        if type(timestamp) == datetime:
-            self._timestamp = timestamp
-            return
-        self._timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
-    
+    def aggregate_by_datatype_and_minute(self, device_id, start_timestamp, end_timestamp):
+        aggregated_data = []
+        for data_type in self._data_types:
+            start_time = datetime.strptime(start_timestamp, '%Y-%m-%d %H:%M:%S.%f')
+            time = start_time
+            end_time = datetime.strptime(end_timestamp, '%Y-%m-%d %H:%M:%S.%f')
+            while time <= end_time:
+                timestamp = time.strftime('%Y-%m-%d %H:%M:%S.%f')
+                print(timestamp)
+                time += timedelta(seconds=60)
+                timerange = (timestamp, time.strftime('%Y-%m-%d %H:%M:%S.%f'))
+                aggregated_data.append(self.aggregate(device_id, timerange, data_type))
+        return aggregated_data
 
-class BSMRawDataSet:
-
-    _data_set: List[BSMRawData]
-
-    def __init__(self, start_time, end_time):
-        db = DynamoDB('bsm_data')
-        db.query(timestamp, start_time)
-
-
-
+    def aggregate(self, device_id, timerange, datatype):
+        data = self._db.query_range(device_id, timerange, datatype=datatype)
+        min, max, sum = (9999, -9999, 0)
+        for record in data:
+            value = float(record['value'])
+            if min > value:
+                min = value
+            if max < value:
+                max = value
+            sum += value
+        avg = 1.0*sum/(1.0*len(data))
+        return {'deviceid': device_id,
+                'datatype': datatype,
+                'timestamp': timerange[0],
+                'min': min,
+                'max': max,
+                'avg': avg
+        }

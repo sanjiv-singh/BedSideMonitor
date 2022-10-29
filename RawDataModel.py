@@ -1,5 +1,6 @@
 from itertools import count
 from os import times
+from typing import Type
 from Database import Database
 from datetime import datetime, timedelta
 import math
@@ -30,7 +31,12 @@ class RawDataModel:
         data = self._db.query_range(device_id, timerange, datatype=datatype)
         min, max, sum = (9999, -9999, 0)
         for record in data:
-            value = float(record['value'])
+            if device_id != record.get("deviceid"):
+                continue
+            try:
+                value = float(record.get('value'))
+            except TypeError:
+                continue
             if min > value:
                 min = value
             if max < value:

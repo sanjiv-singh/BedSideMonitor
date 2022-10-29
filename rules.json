@@ -1,0 +1,25 @@
+{
+  "rules":  [
+      {
+        "rule_id": "Rule_101",
+        "datatype": "HeartRate",
+        "avg_min": 88,
+        "avg_max": 90,
+        "trigger_count": 2
+      },
+      {
+        "rule_id": "Rule_102",
+        "datatype": "Temperature",
+        "avg_min": 97,
+        "avg_max": 100,
+        "trigger_count": 2
+      },
+      {
+        "rule_id": "Rule_103",
+        "datatype": "SPO2",
+        "avg_min": 88,
+        "avg_max": 97,
+        "trigger_count": 2
+      }
+    ]
+}

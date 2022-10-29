@@ -42,8 +42,6 @@ class Database:
 		response = self._table.query(**query_params)
 		return response.get('Items')
 	
-	#FilterExpression=reduce(And, ([Key(k).eq(v) for k, v in filters.items()]))
-
 	# To get data based on partition attribute value and comparison with sort attribute range
 	def query_cmp(self, partition_value, cmp_op='lt', cmp_value='0'):
 		if cmp_op not in ['eq', 'lt', 'gt', 'lte', 'gte']:

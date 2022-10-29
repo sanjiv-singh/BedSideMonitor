@@ -1,7 +1,4 @@
-from ast import operator
 import json
-import datetime
-
 from Database import Database
 from AggregateDataModel import AggregateDataModel
 
@@ -41,21 +38,28 @@ class AlertDataModel:
             avg_value = record.get('avg')
 
             # Values specified in rule for the given datatype
+            # Assuming there is a single rule for each datatype (sensor type)
+            # We take the first rule pertaining to that datatype
             rule = [rule for rule in self._rules if data_type == rule['datatype']][0]
             avg_min = rule.get('avg_min')
             avg_max = rule.get('avg_max')
 
             # Compare data and rule values
             if (avg_value < avg_min) or (avg_value > avg_max):
-                # Record the first breach time in case it is a first breach
+                # Save the timestamp in case only if it is a first breach.
+                # This will give us the first instance of breach as required by  Reqqmt 3b 
                 if rule['breached'] == 0:
                     rule['first_breach_time'] = timestamp
-                # Increment the breach count
+                # Increment the breach count in case of breach
                 rule['breached'] += 1
             else:
-                # Reset the breach count and first breach time
+                # If none of the rules are breached in this iteration,
+                # reset the breach count to zero and remove the first_breach_time
                 rule["breached"] = 0
                 _ = rule.pop("first_breach_time", None)
+            # Check if an alert condition has been reached,
+            # i.e., whether no of continuous breaches equals
+            # or exceeds trigger_count
             breached_rule = self._check_alert_condition()
 
             # If any rule has been breached as per condition
@@ -63,6 +67,9 @@ class AlertDataModel:
             if breached_rule:
                 self._log_alert(device_id, breached_rule["rule_id"],
                         breached_rule["first_breach_time"], breached_rule["datatype"])
+                
+                # After logging / saving, reset the breach count to zero and
+                # remove the first_breach_time
                 breached_rule["breached"] = 0
                 breached_rule.pop("first_breach_time", None)
             

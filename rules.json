@@ -3,23 +3,23 @@
       {
         "rule_id": "Rule_101",
         "datatype": "HeartRate",
-        "avg_min": 88,
-        "avg_max": 90,
-        "trigger_count": 2
+        "avg_min": 86,
+        "avg_max": 94,
+        "trigger_count": 5
       },
       {
         "rule_id": "Rule_102",
         "datatype": "Temperature",
         "avg_min": 97,
-        "avg_max": 100,
-        "trigger_count": 2
+        "avg_max": 99,
+        "trigger_count": 5
       },
       {
         "rule_id": "Rule_103",
         "datatype": "SPO2",
-        "avg_min": 88,
-        "avg_max": 97,
-        "trigger_count": 2
+        "avg_min": 92,
+        "avg_max": 96,
+        "trigger_count": 5
       }
     ]
 }

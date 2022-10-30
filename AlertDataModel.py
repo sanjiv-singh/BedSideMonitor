@@ -76,6 +76,9 @@ class AlertDataModel:
     # This method should log the data in the designed database.  
     def _log_alert(self, device_id, rule_id, starting_timestamp, last_breach_type):
 
+        msg = f'Alert for device_id {device_id} on rule {rule_id} starting at {starting_timestamp} with breach type {last_breach_type}'
+        print(msg)
+
         alert_item =  {
             "deviceid": device_id,
             "rule_id": rule_id,
@@ -83,7 +86,6 @@ class AlertDataModel:
             "breach_type": last_breach_type
         }
         self._alert_db.put_item(alert_item)
-        print('Alert: ', alert_item)
 
     def _check_alert_condition(self):
         

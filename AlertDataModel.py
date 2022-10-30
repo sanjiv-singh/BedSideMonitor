@@ -15,7 +15,7 @@ class AlertDataModel:
         # Initialize two additional attibutes for indicating
         # the number of continuous breaches and the time of first breach
         for rule in self._rules:
-            rule['breached'] = 0
+            rule['breach_count'] = 0
             rule['breach_time'] = None
         
         # Initialise the aggregate data model for reading aggregate values
@@ -48,14 +48,14 @@ class AlertDataModel:
             if (avg_value < avg_min) or (avg_value > avg_max):
                 # Save the timestamp in case only if it is a first breach.
                 # This will give us the first instance of breach as required by  Reqqmt 3b 
-                if rule['breached'] == 0:
+                if rule['breach_count'] == 0:
                     rule['first_breach_time'] = timestamp
                 # Increment the breach count in case of breach
-                rule['breached'] += 1
+                rule['breach_count'] += 1
             else:
                 # If none of the rules are breached in this iteration,
                 # reset the breach count to zero and remove the first_breach_time
-                rule["breached"] = 0
+                rule["breach_count"] = 0
                 _ = rule.pop("first_breach_time", None)
             # Check if an alert condition has been reached,
             # i.e., whether no of continuous breaches equals
@@ -70,7 +70,7 @@ class AlertDataModel:
                 
                 # After logging / saving, reset the breach count to zero and
                 # remove the first_breach_time
-                breached_rule["breached"] = 0
+                breached_rule["breach_count"] = 0
                 breached_rule.pop("first_breach_time", None)
             
     # This method should log the data in the designed database.  
@@ -93,7 +93,7 @@ class AlertDataModel:
         # continuously for >= the specified trigger count. If yes, return the
         # breached rule. Otherwise return None
         for rule in self._rules:
-            if rule["breached"] >= rule["trigger_count"]:
+            if rule["breach_count"] >= rule["trigger_count"]:
                 return rule
         return None
 

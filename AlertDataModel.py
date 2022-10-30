@@ -45,18 +45,26 @@ class AlertDataModel:
             avg_max = rule.get('avg_max')
 
             # Compare data and rule values
-            if (avg_value < avg_min) or (avg_value > avg_max):
-                # Save the timestamp in case only if it is a first breach.
-                # This will give us the first instance of breach as required by  Reqqmt 3b 
+            breach_type = None
+            if avg_value < avg_min:
+                breach_type = 'min'
+            if avg_value > avg_max:
+                breach_type = 'max'
+            if breach_type:
+                # Save the timestamp and breach_type in case only if it is a first breach.
+                # This will give us the first instance of breach as required by  Reqmt 3b 
                 if rule['breach_count'] == 0:
                     rule['first_breach_time'] = timestamp
+                    rule['breach_type'] = breach_type
                 # Increment the breach count in case of breach
                 rule['breach_count'] += 1
             else:
                 # If none of the rules are breached in this iteration,
-                # reset the breach count to zero and remove the first_breach_time
+                # reset the breach count to zero and remove the
+                # breach_type and first_breach_time attributes from the rule dict
                 rule["breach_count"] = 0
                 _ = rule.pop("first_breach_time", None)
+                _ = rule.pop("breach_type", None)
             # Check if an alert condition has been reached,
             # i.e., whether no of continuous breaches equals
             # or exceeds trigger_count
@@ -66,7 +74,7 @@ class AlertDataModel:
             # print data to output and store in alerts table
             if breached_rule:
                 self._log_alert(device_id, breached_rule["rule_id"],
-                        breached_rule["first_breach_time"], breached_rule["datatype"])
+                        breached_rule["first_breach_time"], breached_rule["datatype"], breached_rule["breach_type"])
                 
                 # After logging / saving, reset the breach count to zero and
                 # remove the first_breach_time
@@ -74,16 +82,18 @@ class AlertDataModel:
                 breached_rule.pop("first_breach_time", None)
             
     # This method should log the data in the designed database.  
-    def _log_alert(self, device_id, rule_id, starting_timestamp, last_breach_type):
+    def _log_alert(self, device_id, rule_id, starting_timestamp, breach_datatype, breach_type):
 
-        msg = f'Alert for device_id {device_id} on rule {rule_id} starting at {starting_timestamp} with breach type {last_breach_type}'
+        msg = f'Alert for device_id {device_id} on rule {rule_id} starting at ' + \
+            f'{starting_timestamp} with breach type {breach_type} for data type {breach_datatype}'
         print(msg)
 
         alert_item =  {
             "deviceid": device_id,
             "rule_id": rule_id,
             "timestamp": starting_timestamp,
-            "breach_type": last_breach_type
+            "breach_type": breach_type,
+            "datatype": breach_datatype
         }
         self._alert_db.put_item(alert_item)
 

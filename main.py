@@ -39,14 +39,4 @@ if __name__ == '__main__':
         alert_data_model.process_rules(device_id, start_timestamp, end_timestamp)
 
 
-# Two device ids
-DEVICE_ID_1 = 'BSM_G101'
-DEVICE_ID_2 = 'BSM_G102'
-
-# Start and end timestamps based on the data generated
-START_TIMESTAMP = '2022-10-29 14:40:00.000000'
-END_TIMESTAMP = '2022-10-29 15:50:00.000000'
-
-RULES_CONFIG = 'rules.json'
-
 

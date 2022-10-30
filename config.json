@@ -1,0 +1,28 @@
+{
+    "devices": [
+        {
+            "device_id": "BSM_G101",
+            "thing_type": "BSM_01",
+            "thing_type_desc": "Bed Side Monitor for Critical Care Units in hospitals",
+            "thing_group": "Hospital",
+            "thing_group_desc": "Group of all devices deployed in hospital"
+        },
+        {
+            "device_id": "BSM_G102",
+            "thing_type": "BSM_01",
+            "thing_type_desc": "Bed Side Monitor for Critical Care Units in hospitals",
+            "thing_group": "Hospital",
+            "thing_group_desc": "Group of all devices deployed in hospital"
+        }
+    ],
+    "policy_name": "BSM",
+    "role": "BSM_role",
+    "rule": "BSM",
+    "cert_path": "./certs",
+    "raw_table": "bsm_data",
+    "agg_table": "bsm_agg_data",
+    "alerts_table": "bsm_alerts",
+    "rules_file": "rules.json",
+    "start_timestamp": "2022-10-29 14:40:00.000000",
+    "end_timestamp": "2022-10-29 15:50:00.000000"
+}

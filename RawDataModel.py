@@ -30,8 +30,12 @@ class RawDataModel:
                 # Add a minute (60 secs) to compute the end time
                 time += timedelta(seconds=60)
                 timerange = (timestamp, time.strftime('%Y-%m-%d %H:%M:%S.%f'))
+
                 # Call the aggregate method over a minute and append the results to aggregated_data
-                aggregated_data.append(self.aggregate(device_id, timerange, data_type, count))
+                data_over_minute = self.aggregate(device_id, timerange, data_type, count)
+                if not data_over_minute:
+                    continue
+                aggregated_data.append(data_over_minute)
                 # Increment the count. The count is being used to change the timestamp by a few microseconds
                 # to avoid exactly duplicate timestamps (which is a key)
                 count += 1
@@ -41,8 +45,13 @@ class RawDataModel:
     def aggregate(self, device_id, timerange, datatype, count):
         data = self._db.query_range(device_id, timerange, datatype=datatype)
 
-        # initialize min, max and avg to appropriate values
-        min, max, sum = (9999, -9999, 0)
+        # If no data found within the timerange (minute)
+        # return None
+        if len(data) == 0:
+            return None
+
+        # initialize min, max, sum and avg to appropriate values
+        min, max, sum, avg = (9999, -9999, 0, 0)
 
         # Iterate over each data record in the aggregate data
         # to find out the min, max and avg
@@ -66,7 +75,7 @@ class RawDataModel:
         try:
             avg = 1.0*sum/(1.0*len(data))
         except ZeroDivisionError as e:
-            print(f"No data, cannot proceed further: {e}")
+            print(f"Error: {e}")
         
         timestamp = datetime.strptime(timerange[0], '%Y-%m-%d %H:%M:%S.%f')
         timestamp += timedelta(microseconds=count)  # Incrementing stored timestamp my a microsec to avoid duplicate keys
